@@ -41,28 +41,35 @@ MAX_BOXES = 100
 def load_image_ids(split_name):
     ''' Load a list of (path,image_id tuples). Modify this to suit your data locations. '''
     split = []
-    if split_name == 'coco_test2014':
-      with open('/data/coco/annotations/image_info_test2014.json') as f:
+    if split_name == 'coco_val2014':
+      with open('./data/coco/annotations/instances_val2014.json') as f:
         data = json.load(f)
         for item in data['images']:
           image_id = int(item['id'])
-          filepath = os.path.join('/data/test2014/', item['file_name'])
+          filepath = os.path.join('./data/coco/images/val2014/', item['file_name'])
           split.append((filepath,image_id))
     elif split_name == 'coco_test2015':
-      with open('/data/coco/annotations/image_info_test2015.json') as f:
+      with open('./data/coco/annotations/image_info_test2015.json') as f:
         data = json.load(f)
         for item in data['images']:
           image_id = int(item['id'])
-          filepath = os.path.join('/data/test2015/', item['file_name'])
+          filepath = os.path.join('./data/coco/images/test2015/', item['file_name'])
           split.append((filepath,image_id))
     elif split_name == 'genome':
-      with open('/data/visualgenome/image_data.json') as f:
+      with open('./data/visualgenome/image_data.json') as f:
         for item in json.load(f):
           image_id = int(item['image_id'])
-          filepath = os.path.join('/data/visualgenome/', item['url'].split('rak248/')[-1])
-          split.append((filepath,image_id))      
+          filepath = os.path.join('./data/visualgenome/', item['url'].split('rak248/')[-1])
+          split.append((filepath,image_id))     
+    elif split_name == 'flickr30k':
+      image_dir = './data/flickr30k/images/'
+      for file_name in os.listdir(image_dir):
+        filepath = os.path.join(image_dir, file_name)
+        image_id = int(file_name.split('.')[0])
+        split.append((filepath,image_id)) 
     else:
       print 'Unknown split'
+
     return split
 
     
@@ -173,10 +180,10 @@ def generate_tsv(gpu_id, prototxt, weights, image_ids, outfile):
                     
 
 
-def merge_tsvs():
-    test = ['/work/data/tsv/test2015/resnet101_faster_rcnn_final_test.tsv.%d' % i for i in range(8)]
+def merge_tsvs(file_name, num_gpus):
+    test = ['%s.%d' % (file_name, i) for i in range(num_gpus)]
 
-    outfile = '/work/data/tsv/merged.tsv'
+    outfile = file_name
     with open(outfile, 'ab') as tsvfile:
         writer = csv.DictWriter(tsvfile, delimiter = '\t', fieldnames = FIELDNAMES)   
         
@@ -189,7 +196,10 @@ def merge_tsvs():
                     except Exception as e:
                       print e                           
 
-                      
+    print('Completely save the merged data at \"%s\"' % outfile)
+
+
+
      
 if __name__ == '__main__':
 
@@ -231,3 +241,5 @@ if __name__ == '__main__':
     for p in procs:
         p.join()            
                   
+    if len(gpus) > 1:
+        merge_tsvs(args.outfile, len(gpus))

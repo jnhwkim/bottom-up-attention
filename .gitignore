@@ -28,6 +28,9 @@
 # Compiled MATLAB
 *.mex*
 
+# Sublime config file
+sftp-config.json
+
 # IPython notebook checkpoints
 .ipynb_checkpoints
 
