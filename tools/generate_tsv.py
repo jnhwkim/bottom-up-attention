@@ -67,11 +67,40 @@ def load_image_ids(split_name):
         filepath = os.path.join(image_dir, file_name)
         image_id = int(file_name.split('.')[0])
         split.append((filepath,image_id)) 
+    elif split_name == 'referit_train':
+      image_dir = './data/referit/images/'
+      image_list = load_int_list('./data/referit/split/referit_train_imlist.txt')
+      for image_id in image_list:
+        filepath = os.path.join(image_dir, '%d.jpg' % image_id)
+        split.append((filepath,image_id)) 
+    elif split_name == 'referit_val':
+      image_dir = './data/referit/images/'
+      image_list = load_int_list('./data/referit/split/referit_val_imlist.txt')
+      for image_id in image_list:
+        filepath = os.path.join(image_dir, '%d.jpg' % image_id)
+        split.append((filepath,image_id)) 
+    elif split_name == 'referit_test':
+      image_dir = './data/referit/images/'
+      image_list = load_int_list('./data/referit/split/referit_test_imlist.txt')
+      for image_id in image_list:
+        filepath = os.path.join(image_dir, '%d.jpg' % image_id)
+        split.append((filepath,image_id)) 
+    elif split_name == 'referit_trainval':
+      image_dir = './data/referit/images/'
+      image_list = load_int_list('./data/referit/split/referit_trainval_imlist.txt')
+      for image_id in image_list:
+        filepath = os.path.join(image_dir, '%d.jpg' % image_id)
+        split.append((filepath,image_id)) 
     else:
       print 'Unknown split'
 
     return split
 
+def load_int_list(filename):
+    with open(filename, 'r') as f:
+        str_list = f.readlines()
+    int_list = [int(s[:-1]) for s in str_list]
+    return int_list
     
 def get_detections_from_im(net, im_file, image_id, conf_thresh=0.2):
 
