@@ -79,6 +79,12 @@ def load_image_ids(split_name):
       for image_id in image_list:
         filepath = os.path.join(image_dir, '%d.jpg' % image_id)
         split.append((filepath,image_id)) 
+    elif split_name == 'referit_trainval':
+      image_dir = './data/referit/images/'
+      image_list = load_int_list('./data/referit/split/referit_trainval_imlist.txt')
+      for image_id in image_list:
+        filepath = os.path.join(image_dir, '%d.jpg' % image_id)
+        split.append((filepath,image_id)) 
     elif split_name == 'referit_test':
       image_dir = './data/referit/images/'
       image_list = load_int_list('./data/referit/split/referit_test_imlist.txt')
@@ -91,6 +97,30 @@ def load_image_ids(split_name):
       for image_id in image_list:
         filepath = os.path.join(image_dir, '%d.jpg' % image_id)
         split.append((filepath,image_id)) 
+    elif split_name == 'vizwiz_train':
+      image_dir = './data/vizwiz/Images/'
+      for file_name in os.listdir(image_dir):
+        filepath = os.path.join(image_dir, file_name)
+        file_info = file_name.split('_')
+        if file_info[1] == 'train':
+          image_id = int(file_info[2].split('.')[0])
+          split.append((filepath,image_id)) 
+    elif split_name == 'vizwiz_val':
+      image_dir = './data/vizwiz/Images/'
+      for file_name in os.listdir(image_dir):
+        filepath = os.path.join(image_dir, file_name)
+        file_info = file_name.split('_')
+        if file_info[1] == 'val':
+          image_id = int(file_info[2].split('.')[0])
+          split.append((filepath,image_id)) 
+    elif split_name == 'vizwiz_test':
+      image_dir = './data/vizwiz/Images/'
+      for file_name in os.listdir(image_dir):
+        filepath = os.path.join(image_dir, file_name)
+        file_info = file_name.split('_')
+        if file_info[1] == 'test':
+          image_id = int(file_info[2].split('.')[0])
+          split.append((filepath,image_id)) 
     else:
       print 'Unknown split'
 
@@ -105,6 +135,9 @@ def load_int_list(filename):
 def get_detections_from_im(net, im_file, image_id, conf_thresh=0.2):
 
     im = cv2.imread(im_file)
+    if im is None:  # video stream/video file
+      _, im = cv2.VideoCapture(im_file).read()
+
     scores, boxes, attr_scores, rel_scores = im_detect(net, im)
 
     # Keep the original boxes, don't worry about the regresssion bbox outputs
