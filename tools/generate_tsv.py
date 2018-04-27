@@ -22,6 +22,7 @@ import pprint
 import time, os, sys
 import base64
 import numpy as np
+import scipy.io as sio
 import cv2
 import csv
 from multiprocessing import Process
@@ -68,31 +69,31 @@ def load_image_ids(split_name):
         image_id = int(file_name.split('.')[0])
         split.append((filepath,image_id)) 
     elif split_name == 'referit_train':
-      image_dir = './data/referit/images/'
+      image_dir = './data/referit/ImageCLEF/images/'
       image_list = load_int_list('./data/referit/split/referit_train_imlist.txt')
       for image_id in image_list:
         filepath = os.path.join(image_dir, '%d.jpg' % image_id)
         split.append((filepath,image_id)) 
     elif split_name == 'referit_val':
-      image_dir = './data/referit/images/'
+      image_dir = './data/referit/ImageCLEF/images/'
       image_list = load_int_list('./data/referit/split/referit_val_imlist.txt')
       for image_id in image_list:
         filepath = os.path.join(image_dir, '%d.jpg' % image_id)
         split.append((filepath,image_id)) 
     elif split_name == 'referit_trainval':
-      image_dir = './data/referit/images/'
+      image_dir = './data/referit/ImageCLEF/images/'
       image_list = load_int_list('./data/referit/split/referit_trainval_imlist.txt')
       for image_id in image_list:
         filepath = os.path.join(image_dir, '%d.jpg' % image_id)
         split.append((filepath,image_id)) 
     elif split_name == 'referit_test':
-      image_dir = './data/referit/images/'
+      image_dir = './data/referit/ImageCLEF/images/'
       image_list = load_int_list('./data/referit/split/referit_test_imlist.txt')
       for image_id in image_list:
         filepath = os.path.join(image_dir, '%d.jpg' % image_id)
         split.append((filepath,image_id)) 
     elif split_name == 'referit_trainval':
-      image_dir = './data/referit/images/'
+      image_dir = './data/referit/ImageCLEF/images/'
       image_list = load_int_list('./data/referit/split/referit_trainval_imlist.txt')
       for image_id in image_list:
         filepath = os.path.join(image_dir, '%d.jpg' % image_id)
@@ -131,12 +132,26 @@ def load_int_list(filename):
         str_list = f.readlines()
     int_list = [int(s[:-1]) for s in str_list]
     return int_list
-    
-def get_detections_from_im(net, im_file, image_id, conf_thresh=0.2):
+
+def validate_referit_image(image_id, im_file, image):
+    dataroot = os.path.dirname(os.path.dirname(im_file))
+    imcrop_path = os.path.join(dataroot, 'mask/%s_1.mat' % image_id)
+    mask = sio.loadmat(imcrop_path)['segimg_t']
+
+    if mask.shape != image.shape[:2]:
+        image = np.transpose(image, (1, 0, 2))
+    assert mask.shape == image.shape[:2]
+
+    return image
+
+
+def get_detections_from_im(split, net, im_file, image_id, conf_thresh=0.2):
 
     im = cv2.imread(im_file)
     if im is None:  # video stream/video file
-      _, im = cv2.VideoCapture(im_file).read()
+        _, im = cv2.VideoCapture(im_file).read()
+    if 'referit' in split:
+        im = validate_referit_image(image_id, im_file, im)
 
     scores, boxes, attr_scores, rel_scores = im_detect(net, im)
 
@@ -206,7 +221,7 @@ def parse_args():
     return args
 
     
-def generate_tsv(gpu_id, prototxt, weights, image_ids, outfile):
+def generate_tsv(split, gpu_id, prototxt, weights, image_ids, outfile):
     # First check if file exists, and if it is complete
     wanted_ids = set([int(image_id[1]) for image_id in image_ids])
     found_ids = set()
@@ -231,7 +246,7 @@ def generate_tsv(gpu_id, prototxt, weights, image_ids, outfile):
             for im_file,image_id in image_ids:
                 if int(image_id) in missing:
                     _t['misc'].tic()
-                    writer.writerow(get_detections_from_im(net, im_file, image_id))
+                    writer.writerow(get_detections_from_im(split, net, im_file, image_id))
                     _t['misc'].toc()
                     if (count % 100) == 0:
                         print 'GPU {:d}: {:d}/{:d} {:.3f}s (projected finish: {:.2f} hours)' \
@@ -296,7 +311,7 @@ if __name__ == '__main__':
     for i,gpu_id in enumerate(gpus):
         outfile = '%s.%d' % (args.outfile, gpu_id)
         p = Process(target=generate_tsv,
-                    args=(gpu_id, args.prototxt, args.caffemodel, image_ids[i], outfile))
+                    args=(args.data_split, gpu_id, args.prototxt, args.caffemodel, image_ids[i], outfile))
         p.daemon = True
         p.start()
         procs.append(p)
