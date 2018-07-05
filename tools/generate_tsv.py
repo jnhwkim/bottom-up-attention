@@ -41,34 +41,42 @@ MAX_BOXES = 100
 def load_image_ids(split_name):
     ''' Load a list of (path,image_id tuples). Modify this to suit your data locations. '''
     split = []
-    if split_name == 'coco_test2014':
-      with open('/data/coco/annotations/image_info_test2014.json') as f:
-        data = json.load(f)
-        for item in data['images']:
-          image_id = int(item['id'])
-          filepath = os.path.join('/data/test2014/', item['file_name'])
-          split.append((filepath,image_id))
-    elif split_name == 'coco_test2015':
-      with open('/data/coco/annotations/image_info_test2015.json') as f:
-        data = json.load(f)
-        for item in data['images']:
-          image_id = int(item['id'])
-          filepath = os.path.join('/data/test2015/', item['file_name'])
-          split.append((filepath,image_id))
-    elif split_name == 'genome':
-      with open('/data/visualgenome/image_data.json') as f:
-        for item in json.load(f):
-          image_id = int(item['image_id'])
-          filepath = os.path.join('/data/visualgenome/', item['url'].split('rak248/')[-1])
-          split.append((filepath,image_id))      
+    if split_name == 'vizwiz_train':
+        with open('/data/vizwiz/Annotations/train.json') as f:
+            data = json.load(f)
+            for item in data:
+                image_filename = item['image']
+                image_id = int(image_filename.split('.')[0].split('_')[-1])
+                filepath = os.path.join('/data/vizwiz/Images/', image_filename)
+                split.append((filepath,image_id))
+    elif split_name == 'vizwiz_val':
+        with open('/data/vizwiz/Annotations/val.json') as f:
+            data = json.load(f)
+            for item in data:
+                image_filename = item['image']
+                image_id = int(image_filename.split('.')[0].split('_')[-1])
+                filepath = os.path.join('/data/vizwiz/Images/', image_filename)
+                split.append((filepath,image_id))
+    elif split_name == 'vizwiz_test':
+        with open('/data/vizwiz/Annotations/test.json') as f:
+            data = json.load(f)
+            for item in data:
+                image_filename = item['image']
+                image_id = int(image_filename.split('.')[0].split('_')[-1])
+                filepath = os.path.join('/data/vizwiz/Images/', image_filename)
+                split.append((filepath,image_id))
     else:
-      print 'Unknown split'
+        print('Unknown split')
     return split
 
     
 def get_detections_from_im(net, im_file, image_id, conf_thresh=0.2):
-
+    print(im_file)
     im = cv2.imread(im_file)
+    # hotfix -- too small images appeared in Vizwiz
+    if im.shape[0] < 20 and im.shape[1] < 20:
+        im = cv2.resize(im, (20, 20))
+
     scores, boxes, attr_scores, rel_scores = im_detect(net, im)
 
     # Keep the original boxes, don't worry about the regresssion bbox outputs
