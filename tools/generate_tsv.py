@@ -73,8 +73,15 @@ def load_image_ids(split_name):
 def get_detections_from_im(net, im_file, image_id, conf_thresh=0.2):
     print(im_file)
     im = cv2.imread(im_file)
+
     # hotfix -- too small images appeared in Vizwiz
-    if im.shape[0] < 20 and im.shape[1] < 20:
+    if im.shape[0] < 20 or im.shape[1] < 20:
+        im = cv2.resize(im, (20, 20))
+
+    # variation
+    # im = cv2.resize(im, (0,0), fx=1.5, fy=1.5)
+
+    if im.shape[0] < 20 or im.shape[1] < 20:
         im = cv2.resize(im, (20, 20))
 
     scores, boxes, attr_scores, rel_scores = im_detect(net, im)
