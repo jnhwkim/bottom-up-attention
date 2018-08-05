@@ -42,28 +42,28 @@ def load_image_ids(split_name):
     ''' Load a list of (path,image_id tuples). Modify this to suit your data locations. '''
     split = []
     if split_name == 'vizwiz_train':
-        with open('/data/vizwiz/Annotations/train.json') as f:
+        with open('../vizwiz/data/Annotations/train.json') as f:
             data = json.load(f)
             for item in data:
                 image_filename = item['image']
                 image_id = int(image_filename.split('.')[0].split('_')[-1])
-                filepath = os.path.join('/data/vizwiz/Images/', image_filename)
+                filepath = os.path.join('../vizwiz/data/Images/', image_filename)
                 split.append((filepath,image_id))
     elif split_name == 'vizwiz_val':
-        with open('/data/vizwiz/Annotations/val.json') as f:
+        with open('../vizwiz/data/Annotations/val.json') as f:
             data = json.load(f)
             for item in data:
                 image_filename = item['image']
                 image_id = int(image_filename.split('.')[0].split('_')[-1])
-                filepath = os.path.join('/data/vizwiz/Images/', image_filename)
+                filepath = os.path.join('../vizwiz/data/Images/', image_filename)
                 split.append((filepath,image_id))
     elif split_name == 'vizwiz_test':
-        with open('/data/vizwiz/Annotations/test.json') as f:
+        with open('../vizwiz/data/Annotations/test.json') as f:
             data = json.load(f)
             for item in data:
                 image_filename = item['image']
                 image_id = int(image_filename.split('.')[0].split('_')[-1])
-                filepath = os.path.join('/data/vizwiz/Images/', image_filename)
+                filepath = os.path.join('../vizwiz/data/Images/', image_filename)
                 split.append((filepath,image_id))
     else:
         print('Unknown split')
@@ -163,14 +163,14 @@ def generate_tsv(gpu_id, prototxt, weights, image_ids, outfile):
                 found_ids.add(int(item['image_id']))
     missing = wanted_ids - found_ids
     if len(missing) == 0:
-        print 'GPU {:d}: already completed {:d}'.format(gpu_id, len(image_ids))
+        print('GPU {:d}: already completed {:d}'.format(gpu_id, len(image_ids)))
     else:
-        print 'GPU {:d}: missing {:d}/{:d}'.format(gpu_id, len(missing), len(image_ids))
+        print('GPU {:d}: missing {:d}/{:d}'.format(gpu_id, len(missing), len(image_ids)))
     if len(missing) > 0:
         caffe.set_mode_gpu()
         caffe.set_device(gpu_id)
         net = caffe.Net(prototxt, caffe.TEST, weights=weights)
-        with open(outfile, 'ab') as tsvfile:
+        with open(outfile, 'a') as tsvfile:
             writer = csv.DictWriter(tsvfile, delimiter = '\t', fieldnames = FIELDNAMES)   
             _t = {'misc' : Timer()}
             count = 0
@@ -180,9 +180,9 @@ def generate_tsv(gpu_id, prototxt, weights, image_ids, outfile):
                     writer.writerow(get_detections_from_im(net, im_file, image_id))
                     _t['misc'].toc()
                     if (count % 100) == 0:
-                        print 'GPU {:d}: {:d}/{:d} {:.3f}s (projected finish: {:.2f} hours)' \
+                        print('GPU {:d}: {:d}/{:d} {:.3f}s (projected finish: {:.2f} hours)' \
                               .format(gpu_id, count+1, len(missing), _t['misc'].average_time, 
-                              _t['misc'].average_time*(len(missing)-count)/3600)
+                              _t['misc'].average_time*(len(missing)-count)/3600))
                     count += 1
 
                     
@@ -202,7 +202,7 @@ def merge_tsvs():
                     try:
                       writer.writerow(item)
                     except Exception as e:
-                      print e                           
+                      print(e)                           
 
                       
      

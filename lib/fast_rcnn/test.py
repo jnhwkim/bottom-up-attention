@@ -15,7 +15,7 @@ import numpy as np
 import cv2
 import caffe
 from fast_rcnn.nms_wrapper import nms, soft_nms
-import cPickle
+import _pickle as cPickle
 from utils.blob import im_list_to_blob
 import os
 from utils.cython_bbox import bbox_overlaps
@@ -219,7 +219,7 @@ def vis_detections(im, class_name, dets, thresh=0.3, filename='vis.png'):
 def vis_multiple(im, class_names, all_boxes, filename='vis.png'):
     """Visual debugging of detections."""
     
-    print filename
+    print(filename)
     import matplotlib.pyplot as plt
     im = im[:, :, (2, 1, 0)]
     plt.cla()
@@ -259,7 +259,7 @@ def vis_relations(im, class_names, box_proposals, scores, filename='vis.png'):
 
     n = box_proposals.shape[0]
     assert scores.shape[0] == n*n
-    print filename
+    print(filename)
     import matplotlib.pyplot as plt
     im = im[:, :, (2, 1, 0)]
     plt.cla()
@@ -339,7 +339,7 @@ def test_net(net, imdb, max_per_image=400, thresh=-np.inf, vis=False, load_cache
     output_dir = get_output_dir(imdb, net)
     det_file = os.path.join(output_dir, 'detections.pkl')
     if load_cache and os.path.exists(det_file):
-        print 'Loading pickled detections from %s' % det_file
+        print('Loading pickled detections from %s' % det_file)
         with open(det_file, 'rb') as f:
             all_boxes = cPickle.load(f)
     
@@ -397,14 +397,14 @@ def test_net(net, imdb, max_per_image=400, thresh=-np.inf, vis=False, load_cache
                         
             _t['misc'].toc()
 
-            print 'im_detect: {:d}/{:d} {:.3f}s {:.3f}s' \
+            print('im_detect: {:d}/{:d} {:.3f}s {:.3f}s' \
                   .format(i + 1, num_images, _t['im_detect'].average_time,
-                          _t['misc'].average_time)
+                          _t['misc'].average_time))
 
         with open(det_file, 'wb') as f:
             cPickle.dump(all_boxes, f, cPickle.HIGHEST_PROTOCOL)
 
-    print 'Evaluating detections'
+    print('Evaluating detections')
     imdb.evaluate_detections(all_boxes, output_dir)
     
     
@@ -424,7 +424,7 @@ def test_net_with_gt_boxes(net, imdb, max_per_image=400, thresh=-np.inf, vis=Fal
     det_file = os.path.join(output_dir, 'attribute_detections.pkl')
     rel_file = os.path.join(output_dir, 'relation_detections.pkl')
     if load_cache and os.path.exists(det_file):
-        print 'Loading pickled detections from %s' % det_file
+        print('Loading pickled detections from %s' % det_file)
         with open(det_file, 'rb') as f:
             all_boxes = cPickle.load(f)
         with open(rel_file, 'rb') as f:
@@ -476,12 +476,12 @@ def test_net_with_gt_boxes(net, imdb, max_per_image=400, thresh=-np.inf, vis=Fal
                         
             _t['misc'].toc()
 
-            print 'im_detect: {:d}/{:d} {:.3f}s {:.3f}s' \
+            print('im_detect: {:d}/{:d} {:.3f}s {:.3f}s' \
                   .format(i + 1, num_images, _t['im_detect'].average_time,
-                          _t['misc'].average_time)
+                          _t['misc'].average_time))
 
         with open(det_file, 'wb') as f:
             cPickle.dump(all_boxes, f, cPickle.HIGHEST_PROTOCOL)
 
-    print 'Evaluating attribute and / or relation detections'
+    print('Evaluating attribute and / or relation detections')
     imdb.evaluate_attributes(all_boxes, output_dir)    

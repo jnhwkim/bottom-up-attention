@@ -171,7 +171,7 @@ ifneq ("$(wildcard $(CUDA_DIR)/lib64)","")
 endif
 CUDA_LIB_DIR += $(CUDA_DIR)/lib
 
-INCLUDE_DIRS += $(BUILD_INCLUDE_DIR) ./src ./include
+INCLUDE_DIRS += $(BUILD_INCLUDE_DIR) ./src ./include /usr/include/hdf5/serial /workspace/projects/nccl/build/include
 ifneq ($(CPU_ONLY), 1)
 	INCLUDE_DIRS += $(CUDA_INCLUDE_DIR)
 	LIBRARY_DIRS += $(CUDA_LIB_DIR)
@@ -184,6 +184,7 @@ LIBRARIES += glog gflags protobuf boost_system boost_filesystem m hdf5_hl hdf5
 USE_LEVELDB ?= 1
 USE_LMDB ?= 1
 USE_OPENCV ?= 1
+OPENCV_VERSION = 3
 
 ifeq ($(USE_LEVELDB), 1)
 	LIBRARIES += leveldb snappy
@@ -199,7 +200,7 @@ ifeq ($(USE_OPENCV), 1)
 	endif
 
 endif
-PYTHON_LIBRARIES ?= boost_python python2.7
+PYTHON_LIBRARIES ?= boost-python-dev python3
 WARNINGS := -Wall -Wno-sign-compare
 
 ##############################
@@ -403,6 +404,7 @@ else
 endif
 INCLUDE_DIRS += $(BLAS_INCLUDE)
 LIBRARY_DIRS += $(BLAS_LIB)
+LIBRARY_DIRS += /usr/lib/x86_64-linux-gnu/hdf5/serial /workspace/projects/nccl/build/lib
 
 LIBRARY_DIRS += $(LIB_BUILD_DIR)
 
